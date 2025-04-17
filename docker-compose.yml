@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: "zig build -Doptimize=ReleaseSafe run"
+    networks:
+      - app-network
+  frontend:
+    image: node:latest
+    volumes:
+      - ./frontend:/app
+      - frontend-build:/output
+    working_dir: /app
+    command:
+      - sh
+      - -c
+      - "npm install && npm run build && cp -r dist/* /output/"
+    networks:
+      - app-network
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - frontend-build:/usr/share/nginx/html
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
+
+volumes:
+  frontend-build:
+
+networks:
+  app-network:
+    driver: bridge

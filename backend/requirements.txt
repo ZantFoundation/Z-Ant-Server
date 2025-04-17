@@ -1,0 +1,2 @@
+playwright
+git+https://github.com/raphael-prevost/netron-export#v0.2.6

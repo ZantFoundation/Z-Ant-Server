@@ -1,7 +1,5 @@
 # Z-Ant-Server
 
-Web frontend and backend for running Z-Ant in the browser
-
 # Requirements
 
 - Docker
@@ -9,7 +7,7 @@ Web frontend and backend for running Z-Ant in the browser
 
 # How to run
 
-1. Docker project runs with: `COMPOSE_BAKE=TRUE docker-compose up --build`. It'll take a while to build the image.
+1. Docker project runs with: `docker-compose up --build`. It'll take a while to build the image.
 
 !!! Make sure to create the certificates with this script for development only:
 
@@ -34,8 +32,3 @@ chmod 600 nginx/ssl/server.key
 
 echo "Self-signed SSL certificates generated in ./nginx/ssl/"
 ```
-
-# TODO
-
-1. Logging output on website
-2. Netron image generation ✅

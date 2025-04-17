@@ -1,0 +1,3 @@
+[submodule "backend/vendor/Z-Ant"]
+	path = backend/vendor/Z-Ant
+	url = https://github.com/ZantFoundation/Z-Ant

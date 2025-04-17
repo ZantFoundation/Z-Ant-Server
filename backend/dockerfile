@@ -1,0 +1,69 @@
+# Stage 1: Build stage
+FROM python:3.11-slim AS builder
+
+ARG TARGETARCH
+
+# Install dependencies for building
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    tar \
+    xz-utils \
+    zip \
+    openssl \
+    git \
+    python3-venv \
+    build-essential \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig based on architecture
+RUN if [ "$TARGETARCH" = "amd64" ] || [ -z "$TARGETARCH" ]; then \
+    curl -L https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz -o zig.tar.xz; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+    curl -L https://ziglang.org/download/0.14.0/zig-linux-aarch64-0.14.0.tar.xz -o zig.tar.xz; \
+    elif [ "$TARGETARCH" = "arm" ]; then \
+    curl -L https://ziglang.org/download/0.14.0/zig-linux-armv7a-0.14.0.tar.xz -o zig.tar.xz; \
+    else \
+    echo "Unsupported architecture: $TARGETARCH" && exit 1; \
+    fi && \
+    mkdir -p /zig && \
+    tar -xf zig.tar.xz -C /zig --strip-components=1 && \
+    rm zig.tar.xz
+
+# Set up virtualenv and install dependencies
+WORKDIR /app
+COPY . .
+RUN python3 -m venv /venv --copies
+ENV PATH="/venv/bin:/zig:$PATH"
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Build with Zig
+RUN zig build -Doptimize=ReleaseSafe
+
+# Stage 2: Runtime stage
+FROM mcr.microsoft.com/playwright/python:v1.37.0-jammy AS runtime
+
+# Install minimal additional runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    zip \
+    libstdc++6 \
+    libpython3.11 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy built environment and Zig
+COPY --from=builder /venv /venv
+COPY --from=builder /zig /usr/local/zig
+COPY --from=builder /app /app
+
+# Set env variables
+ENV PATH="/venv/bin:/usr/local/zig:$PATH"
+ENV ZIG_VERSION=0.14.0
+ENV ZIG_HOME=/usr/local/zig
+
+RUN playwright install --with-deps chromium
+
+# Set working directory and default command
+WORKDIR /app
+CMD ["netron_export", "--help"]
