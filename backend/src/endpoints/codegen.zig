@@ -26,7 +26,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
-    var file_name: ?[]const u8 = null;
+    var model: ?[]const u8 = null;
     var id: ?[]const u8 = null;
     for (params.items) |param| {
         if (std.mem.eql(u8, param.key, "id")) {
@@ -34,9 +34,9 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
                 id = value.String;
             }
         }
-        if (std.mem.eql(u8, param.key, "file_name")) {
+        if (std.mem.eql(u8, param.key, "model")) {
             if (param.value) |value| {
-                file_name = value.String;
+                model = value.String;
             }
         }
     }
@@ -45,14 +45,14 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
         return r.sendBody("User ID not found\n");
     }
 
-    if (file_name == null) {
-        return r.sendBody("File name not found\n");
+    if (model == null) {
+        return r.sendBody("Model not found\n");
     }
 
     const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip/{s}.zip", .{
         Constants.DATABASE_PATH,
         id.?,
-        file_name.?,
+        model.?,
     });
     defer self.allocator.free(zip_code_path);
     const file = try std.fs.cwd().openFile(zip_code_path, .{});
@@ -61,7 +61,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const file_data = try file.readToEndAlloc(self.allocator, file_size);
     defer self.allocator.free(file_data);
     try r.setHeader("Content-Type", "application/zip");
-    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{file_name.?}));
+    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model.?}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }

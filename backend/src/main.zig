@@ -2,6 +2,7 @@ const std = @import("std");
 const zap = @import("zap");
 
 const Codegen = @import("endpoints/codegen.zig");
+const Libgen = @import("endpoints/libgen.zig");
 const Netron = @import("endpoints/netron.zig");
 
 pub fn main() !void {
@@ -28,11 +29,15 @@ pub fn main() !void {
         var codegen = Codegen.init(allocator, "/codegen");
         defer codegen.deinit();
 
+        var libgen = Libgen.init(allocator, "/libgen");
+        defer libgen.deinit();
+
         var netron = Netron.init(allocator, "/netron");
         defer netron.deinit();
 
         // register endpoints with the listener
         try listener.register(&codegen);
+        try listener.register(&libgen);
         try listener.register(&netron);
 
         try listener.listen();
