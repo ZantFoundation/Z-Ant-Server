@@ -26,7 +26,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
-    var file_name: ?[]const u8 = null;
+    var model: ?[]const u8 = null;
     var id: ?[]const u8 = null;
     for (params.items) |param| {
         if (std.mem.eql(u8, param.key, "id")) {
@@ -34,9 +34,9 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
                 id = value.String;
             }
         }
-        if (std.mem.eql(u8, param.key, "file_name")) {
+        if (std.mem.eql(u8, param.key, "model")) {
             if (param.value) |value| {
-                file_name = value.String;
+                model = value.String;
             }
         }
     }
@@ -45,14 +45,14 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
         return r.sendBody("User ID not found\n");
     }
 
-    if (file_name == null) {
-        return r.sendBody("File name not found\n");
+    if (model == null) {
+        return r.sendBody("Model not found\n");
     }
 
     const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip/{s}.zip", .{
         Constants.DATABASE_PATH,
         id.?,
-        file_name.?,
+        model.?,
     });
     defer self.allocator.free(zip_code_path);
     const file = try std.fs.cwd().openFile(zip_code_path, .{});
@@ -61,7 +61,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const file_data = try file.readToEndAlloc(self.allocator, file_size);
     defer self.allocator.free(file_data);
     try r.setHeader("Content-Type", "application/zip");
-    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{file_name.?}));
+    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model.?}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }
@@ -77,40 +77,45 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
-    var user_id: ?[]const u8 = null;
-    var file: ?zap.Request.HttpParamBinaryFile = null;
-    var model_name: ?[]const u8 = null;
+    var _id: ?[]const u8 = null;
+    var _file: ?zap.Request.HttpParamBinaryFile = null;
+    var _model: ?[]const u8 = null;
 
     for (params.items) |param| {
         if (std.mem.eql(u8, param.key, "id")) {
             if (param.value) |value| {
-                user_id = value.String;
+                _id = value.String;
             }
         }
 
         if (std.mem.eql(u8, param.key, "onnx_file")) {
             if (param.value) |value| {
-                file = value.Hash_Binfile;
+                _file = value.Hash_Binfile;
             }
         }
 
         if (std.mem.eql(u8, param.key, "model")) {
             if (param.value) |value| {
-                model_name = value.String;
+                _model = value.String;
             }
         }
     }
 
-    const id = user_id orelse return r.sendBody("User ID not found\n");
-    if (model_name == null and file == null) {
+    if (_id == null) {
+        return r.sendBody("User ID not found\n");
+    }
+
+    const id = _id.?;
+
+    if (_model == null and _file == null) {
         return r.sendBody("Provide either model name or a custom onnx file.\n");
     }
 
-    if (model_name != null and file != null) {
+    if (_model != null and _file != null) {
         return r.sendBody("Provide either model name or a custom onnx file, not both.\n");
     }
 
-    if (model_name) |model| {
+    if (_model) |model| {
         const generated_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/generated/", .{ Constants.DATABASE_PATH, id });
         defer self.allocator.free(generated_code_path);
         try std.fs.cwd().makePath(generated_code_path);
@@ -130,47 +135,49 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
         try r.sendBody(json_str);
     }
 
-    if (file) |f| {
-        if (f.data) |data| {
-            if (f.filename) |fname| {
-                const dot_index = std.mem.lastIndexOf(u8, fname, ".") orelse fname.len;
-                const filename = fname[0..dot_index];
+    const file = _file.?;
 
-                const model_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/models/", .{ Constants.DATABASE_PATH, id });
-                defer self.allocator.free(model_path);
-                try std.fs.cwd().makePath(model_path);
-
-                try Runner.writeFileToDatabase(self.allocator, data, model_path, filename);
-
-                const generated_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/generated", .{ Constants.DATABASE_PATH, id });
-                defer self.allocator.free(generated_code_path);
-                try std.fs.cwd().makePath(generated_code_path);
-
-                try Runner.codeGenCustom(self.allocator, model_path, generated_code_path, filename);
-
-                const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip", .{
-                    Constants.DATABASE_PATH,
-                    id,
-                });
-                defer self.allocator.free(zip_code_path);
-                try std.fs.cwd().makePath(zip_code_path);
-
-                try Runner.zipFolder(self.allocator, generated_code_path, filename);
-
-                const response = .{ .message = "Code generation completed successfully" };
-                const json_str = try std.json.stringifyAlloc(self.allocator, response, .{});
-                try r.setHeader("Content-Type", "application/json");
-                try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
-                try r.sendBody(json_str);
-            } else {
-                return r.sendBody("File name not found\n");
-            }
-        } else {
-            return r.sendBody("File data not found\n");
-        }
+    if (file.data == null) {
+        return r.sendBody("File data not found\n");
     }
 
-    return r.sendBody("Model not found\n");
+    const file_data = file.data.?;
+
+    if (file.filename == null) {
+        return r.sendBody("File name not found\n");
+    }
+
+    const file_name = file.filename.?;
+
+    const dot_index = std.mem.lastIndexOf(u8, file_name, ".") orelse file_name.len;
+    const filename = file_name[0..dot_index];
+
+    const model_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/models/", .{ Constants.DATABASE_PATH, id });
+    defer self.allocator.free(model_path);
+    try std.fs.cwd().makePath(model_path);
+
+    try Runner.writeFileToDatabase(self.allocator, file_data, model_path, filename);
+
+    const generated_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/generated", .{ Constants.DATABASE_PATH, id });
+    defer self.allocator.free(generated_code_path);
+    try std.fs.cwd().makePath(generated_code_path);
+
+    try Runner.codeGenCustom(self.allocator, model_path, generated_code_path, filename);
+
+    const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip", .{
+        Constants.DATABASE_PATH,
+        id,
+    });
+    defer self.allocator.free(zip_code_path);
+    try std.fs.cwd().makePath(zip_code_path);
+
+    try Runner.zipFolder(self.allocator, generated_code_path, filename);
+
+    const response = .{ .message = "Code generation completed successfully" };
+    const json_str = try std.json.stringifyAlloc(self.allocator, response, .{});
+    try r.setHeader("Content-Type", "application/json");
+    try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
+    try r.sendBody(json_str);
 }
 
 pub fn options(_: *Codegen, r: zap.Request) !void {
