@@ -9,8 +9,9 @@ const Navbar: React.FC = () => {
     <nav className={`py-3 ${themeClasses.navbar} shadow-lg`}>
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center">
-          <span
+          <a
             className={`text-xl md:text-2xl flex items-center font-bold ${themeClasses.text}`}
+            href="/"
           >
             <img
               src="src/assets/zant-icon.png"
@@ -18,7 +19,7 @@ const Navbar: React.FC = () => {
               className="h-8 mr-3"
             />
             Z-Ant
-          </span>
+          </a>
         </div>
         <div className="flex items-center">
           <button
