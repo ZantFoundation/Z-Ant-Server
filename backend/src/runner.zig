@@ -68,4 +68,35 @@ pub fn zipFolder(allocator: std.mem.Allocator, generate_path: []const u8, file_n
     if (zip_result.Exited != 0) return error.ZipFailed;
 }
 
+pub fn libGen(allocator: std.mem.Allocator, model_name: []const u8, target_arch: []const u8, cpu: []const u8, output_path: []const u8, generated_path: []const u8) !void {
+    //zig build lib -Dmodel=model_name -Dtarget=target_arch -Dcpu=specific_cpu -Doutput_path=output_path -Dgenerated_path=generated_path
+    const model_name_flag = try std.fmt.allocPrint(allocator, "-Dmodel={s}", .{model_name});
+    defer allocator.free(model_name_flag);
+    const target_arch_flag = try std.fmt.allocPrint(allocator, "-Dtarget={s}", .{target_arch});
+    defer allocator.free(target_arch_flag);
+    const cpu_flag = try std.fmt.allocPrint(allocator, "-Dcpu={s}", .{cpu});
+    defer allocator.free(cpu_flag);
+    const output_path_flag = try std.fmt.allocPrint(allocator, "-Doutput_path=../../{s}", .{output_path});
+    defer allocator.free(output_path_flag);
+    const generated_path_flag = try std.fmt.allocPrint(allocator, "-Dgenerated_path=../../{s}", .{generated_path});
+    defer allocator.free(generated_path_flag);
+
+    var libgen_args = [_][]const u8{
+        "zig",
+        "build",
+        "lib",
+        model_name_flag,
+        target_arch_flag,
+        cpu_flag,
+        output_path_flag,
+        generated_path_flag,
+    };
+
+    var libgen_child = std.process.Child.init(&libgen_args, allocator);
+    libgen_child.cwd = "vendor/Z-Ant";
+    try libgen_child.spawn();
+    const libgen_result = try libgen_child.wait();
+    if (libgen_result.Exited != 0) return error.LibGenFailed;
+}
+
 pub fn runNetron(_: std.mem.Allocator, _: []const u8) !void {}
