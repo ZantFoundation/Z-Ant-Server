@@ -135,6 +135,10 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
         try r.sendBody(json_str);
     }
 
+    if (_file == null) {
+        return r.sendBody("File not found\n");
+    }
+
     const file = _file.?;
 
     if (file.data == null) {
