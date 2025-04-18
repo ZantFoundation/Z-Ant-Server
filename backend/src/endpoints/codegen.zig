@@ -88,7 +88,7 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
             }
         }
 
-        if (std.mem.eql(u8, param.key, "onnx_file")) {
+        if (std.mem.eql(u8, param.key, "file")) {
             if (param.value) |value| {
                 _file = value.Hash_Binfile;
             }
