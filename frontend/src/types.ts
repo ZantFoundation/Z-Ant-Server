@@ -1,18 +1,20 @@
-interface DropZoneProps {
-    onFileSelect: (file: File | null, errorMessage?: string) => void;
-}
-  
-interface FileInfoProps {
-    file: File | null;
-}
-  
-interface ProgressBarProps {
-    progress: number;
+// Define common types that can be shared across multiple components
+
+// You can extend these types as your application grows
+interface NavLinkType {
+  name: string;
+  href: string;
 }
 
-interface StatusMessageProps {
-    error: string;
-    success: string;
+interface ProjectInfoType {
+  name: string;
+  description: string;
+  github: string;
 }
 
-export type { DropZoneProps, FileInfoProps, ProgressBarProps, StatusMessageProps };
+interface FooterLinkType {
+  name: string;
+  href: string;
+}
+
+export type { NavLinkType, ProjectInfoType, FooterLinkType };
