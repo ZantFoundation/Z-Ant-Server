@@ -26,34 +26,38 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
-    var model: ?[]const u8 = null;
-    var id: ?[]const u8 = null;
+    var _model: ?[]const u8 = null;
+    var _id: ?[]const u8 = null;
     for (params.items) |param| {
         if (std.mem.eql(u8, param.key, "id")) {
             if (param.value) |value| {
-                id = value.String;
+                _id = value.String;
             }
         }
         if (std.mem.eql(u8, param.key, "model")) {
             if (param.value) |value| {
-                model = value.String;
+                _model = value.String;
             }
         }
     }
 
-    if (id == null) {
+    if (_id == null) {
         return r.sendBody("User ID not found\n");
     }
 
-    if (model == null) {
+    if (_model == null) {
         return r.sendBody("Model not found\n");
     }
 
+    const id = _id.?;
+    const model = _model.?;
+
     const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip/{s}.zip", .{
         Constants.DATABASE_PATH,
-        id.?,
-        model.?,
+        id,
+        model,
     });
+
     defer self.allocator.free(zip_code_path);
     const file = try std.fs.cwd().openFile(zip_code_path, .{});
     defer file.close();
@@ -61,7 +65,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const file_data = try file.readToEndAlloc(self.allocator, file_size);
     defer self.allocator.free(file_data);
     try r.setHeader("Content-Type", "application/zip");
-    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model.?}));
+    try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }
@@ -122,12 +126,16 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
 
         try Runner.codeGenModel(self.allocator, generated_code_path, model);
 
-        const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip/", .{
+        const zip_code_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/zip", .{
             Constants.DATABASE_PATH,
             id,
         });
+
         defer self.allocator.free(zip_code_path);
         try std.fs.cwd().makePath(zip_code_path);
+
+        try Runner.zipFolder(self.allocator, generated_code_path, model);
+
         const response = .{ .message = "Code generation completed successfully" };
         const json_str = try std.json.stringifyAlloc(self.allocator, response, .{});
         try r.setHeader("Content-Type", "application/json");
@@ -172,6 +180,7 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
         Constants.DATABASE_PATH,
         id,
     });
+
     defer self.allocator.free(zip_code_path);
     try std.fs.cwd().makePath(zip_code_path);
 
