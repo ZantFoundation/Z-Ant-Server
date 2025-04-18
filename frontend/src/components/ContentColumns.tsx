@@ -5,17 +5,14 @@ const ContentColumns: React.FC = () => {
   const { themeClasses } = useTheme();
 
   return (
-    <div className="w-full flex flex-col md:flex-row gap-8">
+    <div className="w-full max-w-6xl px-4 py-8 grid grid-cols-1 md:grid-cols-3 gap-6">
       <div
-        className={`md:w-1/3 ${themeClasses.card} border ${themeClasses.background} ${themeClasses.text} p-6 rounded-lg shadow-lg`}
-      >
-        Help
-      </div>
+        className={`flex flex-col ${themeClasses.card} border-2 rounded-xl p-6`}
+      ></div>
+
       <div
-        className={`md:w-2/3 ${themeClasses.card} border ${themeClasses.background} ${themeClasses.text} p-6 rounded-lg shadow-lg`}
-      >
-        Content for the second column
-      </div>
+        className={`flex flex-col md:col-span-2 ${themeClasses.card} border-2 rounded-xl p-6`}
+      ></div>
     </div>
   );
 };

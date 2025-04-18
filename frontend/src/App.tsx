@@ -14,13 +14,13 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider>
-      {({ darkMode, themeClasses }) => (
+      {({ themeClasses }) => (
         <div
           className={`min-h-screen flex flex-col ${themeClasses.background} transition-colors duration-300`}
         >
           <Navbar />
 
-          <main className="flex-grow container mx-auto px-4 py-8 md:py-12">
+          <main className="flex-1 flex flex-col items-center justify-center p-4">
             {!showColumns ? (
               <LandingPage toggleColumnsView={toggleColumnsView} />
             ) : (
