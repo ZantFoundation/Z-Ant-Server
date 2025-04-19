@@ -7,6 +7,7 @@ services:
       - "3000"
     volumes:
       - ./backend:/app
+      - ./database:/database
     working_dir: /app
     command: "zig build -Doptimize=ReleaseSafe run"
     networks:

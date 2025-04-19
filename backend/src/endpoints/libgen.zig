@@ -131,7 +131,7 @@ pub fn post(self: *Libgen, r: zap.Request) !void {
 
     const output_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/lib", .{ Constants.DATABASE_PATH, id });
     defer self.allocator.free(output_path);
-    try std.fs.cwd().makeDir(output_path);
+    try std.fs.cwd().makePath(output_path);
 
     try Runner.libGen(self.allocator, model, target_arch, cpu, output_path, generated_path);
 

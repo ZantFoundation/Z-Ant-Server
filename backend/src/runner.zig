@@ -99,4 +99,19 @@ pub fn libGen(allocator: std.mem.Allocator, model_name: []const u8, target_arch:
     if (libgen_result.Exited != 0) return error.LibGenFailed;
 }
 
-pub fn runNetron(_: std.mem.Allocator, _: []const u8) !void {}
+pub fn runNetron(allocator: std.mem.Allocator, netron_output_file_path: []const u8, model_path: []const u8) !void {
+    var netron_args = [_][]const u8{
+        "netron_export",
+        model_path,
+        "--output",
+        netron_output_file_path,
+    };
+
+    std.debug.print("Netron args: {s}\n", .{netron_args});
+
+    var netron_child = std.process.Child.init(&netron_args, allocator);
+    netron_child.cwd = ".";
+    try netron_child.spawn();
+    const netron_result = try netron_child.wait();
+    if (netron_result.Exited != 0) return error.NetronFailed;
+}
