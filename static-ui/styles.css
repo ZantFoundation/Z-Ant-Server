@@ -1,0 +1,238 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "IBM Plex Mono", monospace;
+    background-color: #262422;
+    color: #FFFFFF;
+}
+
+.activePage {
+    display: flex; /* Or block, depending on the page's layout needs */
+}
+
+.hiddenPage {
+    display: none;
+}
+
+/* Header */
+
+header {
+    width: 100%;
+    height: 4rem;
+    padding-left: 2rem;
+    padding-right: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px dashed transparent; /* Set up a dashed border */
+    border-image: repeating-linear-gradient(
+        to right,
+        #9B9793 0,
+        #9B9793 20px,
+        transparent 20px,
+        transparent 30px
+    ) 1; /* Define dash and gap lengths */
+}
+
+header div {
+    display: flex;
+    align-items: center;
+}
+
+/* Add cursor pointer to the logo container */
+#logoClick {
+    cursor: pointer;
+}
+
+header img {
+    height: 2.5rem;
+}
+
+header p {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #FFA500;
+}
+
+nav a {
+    padding: 0.5rem;
+    text-decoration: none;
+    color: #FFFFFF;
+    font-size: 1rem;
+    transition: color 0.1s ease;
+}
+
+nav a:hover {
+    color: #FFA500;
+}
+
+/* Welcome Page */
+
+#welcomePage {
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    height: calc(100vh - 5rem);
+    margin: 0 auto;
+}
+
+#heroSection {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+#heroSection h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #FFA500; /* Set color to standard orange */
+}
+
+#startButton {
+    padding: 0.8rem 1.5rem;
+    font-family: inherit; /* Inherit font */
+    font-size: 0.9rem; /* Match modelButton */
+    font-weight: 600;
+    background-color: #3a3836; /* Match modelButton */
+    color: #EEEDEA; /* Match modelButton */
+    border: 1px solid #9B9793; /* Match modelButton */
+    border-radius: 8px;
+    cursor: pointer;
+    /* Match modelButton transition */
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
+}
+
+#startButton:hover {
+    background-color: #4f4c49; /* Match modelButton:hover */
+    border-color: #FFA500; /* Match modelButton:hover */
+    transform: scale(1.02); /* Match modelButton:hover scale */
+}
+
+#welcomePage p {
+    font-size: 1rem;
+    color: #EEEDEA;
+    margin: 2rem;
+}
+
+/* Select Model Page */
+
+#selectModelPage {
+    /* display: flex; is handled by .activePage */
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    padding: 1rem 2rem;
+    height: calc(100vh - 5rem);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#selectModelPage h2 {
+    color: #FFA500;
+    text-align: center;
+    margin-bottom: 1.5rem; /* Add margin back */
+}
+
+#uploadSection, #predefinedModelsSection {
+    width: 90%; /* Allow more width */
+    max-width: 700px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#dropZone {
+    /* Style similar to modelButton */
+    border-radius: 8px; /* Match button radius */
+    border: 1px solid #9B9793; /* Match button border */
+    background-color: #3a3836; /* Match button background */
+    padding: 2rem; /* Keep generous padding for drop area */
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease; /* Match button transition */
+    width: 100%;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column; /* Stack image and text vertically */
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+/* Target img and p directly inside #dropZone */
+#dropZone img {
+    width: 50px;
+    height: auto;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.1s ease; /* Add transition for hover */
+}
+
+#dropZone p {
+    color: #FFFFFF; /* Change to white */
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Style dragover state similar to button hover */
+#dropZone.dragover {
+    background-color: #4f4c49; 
+    border-color: #FFA500;
+}
+
+/* Style hover state similar to button hover */
+#dropZone:hover {
+    background-color: #4f4c49; 
+    border-color: #FFA500;
+    transform: scale(1.02); /* Add subtle scale like buttons */
+}
+
+/* Style image hover directly */
+#dropZone:hover img {
+    opacity: 1;
+}
+
+#predefinedModelsSection h3 {
+    margin-bottom: 1rem;
+    color: #EEEDEA;
+    font-size: 1.1rem;
+}
+
+#modelList {
+    display: grid; /* Use grid layout */
+    grid-template-columns: repeat(2, 1fr); /* Create 2 equal columns */
+    gap: 1rem; /* Adjust gap between buttons */
+    width: 100%;
+}
+
+.modelButton {
+    padding: 0.8rem 1.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background-color: #3a3836; 
+    color: #FFFFFF; /* Change to white */
+    border: 1px solid #9B9793;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
+    text-align: center;
+}
+
+.modelButton:hover {
+    background-color: #4f4c49; 
+    border-color: #FFA500;
+    /* color: #EEEDEA; Remove hover color change */
+    transform: scale(1.02);
+}
+
+/* Page Visibility Control */
