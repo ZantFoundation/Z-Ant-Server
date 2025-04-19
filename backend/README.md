@@ -68,3 +68,15 @@ Request Body:
   "model": "Model for the library downloaded"
 }
 ```
+
+### [GET] /netron
+
+Request Body:
+
+```json
+{
+  "id": "User Session ID its generated on client side.",
+  "model": "Model for the netron image",
+  "builtin": "Optional: set true if model is builtin"
+}
+```
