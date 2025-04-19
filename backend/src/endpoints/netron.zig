@@ -28,6 +28,7 @@ pub fn get(self: *Netron, r: zap.Request) !void {
 
     var _model: ?[]const u8 = null;
     var _id: ?[]const u8 = null;
+    var builtin: bool = false;
 
     for (params.items) |param| {
         if (std.mem.eql(u8, param.key, "id")) {
@@ -38,6 +39,11 @@ pub fn get(self: *Netron, r: zap.Request) !void {
         if (std.mem.eql(u8, param.key, "model")) {
             if (param.value) |value| {
                 _model = value.String;
+            }
+        }
+        if (std.mem.eql(u8, param.key, "builtin")) {
+            if (param.value) |value| {
+                builtin = value.Bool;
             }
         }
     }
@@ -53,17 +59,25 @@ pub fn get(self: *Netron, r: zap.Request) !void {
     const id = _id.?;
     const model = _model.?;
 
-    const model_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/models/{s}.onnx", .{
-        Constants.DATABASE_PATH,
-        id,
-        model,
-    });
+    const model_path = if (builtin)
+        try std.fmt.allocPrint(self.allocator, "vendor/Z-Ant/datasets/models/{s}/{s}.onnx", .{
+            model,
+            model,
+        })
+    else
+        try std.fmt.allocPrint(self.allocator, "{s}/{s}/models/{s}.onnx", .{
+            Constants.DATABASE_PATH,
+            id,
+            model,
+        });
+
     defer self.allocator.free(model_path);
 
     const netron_output_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/netron", .{
         Constants.DATABASE_PATH,
         id,
     });
+
     defer self.allocator.free(netron_output_path);
 
     try std.fs.cwd().makePath(netron_output_path);
