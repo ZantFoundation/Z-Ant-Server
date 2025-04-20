@@ -22,7 +22,7 @@ pub fn deinit(_: *Netron) void {}
 
 pub fn put(_: *Netron, _: zap.Request) !void {}
 pub fn get(self: *Netron, r: zap.Request) !void {
-    try r.parseBody();
+    r.parseQuery();
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 

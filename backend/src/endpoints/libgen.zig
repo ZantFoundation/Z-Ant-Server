@@ -73,8 +73,6 @@ pub fn patch(_: *Libgen, _: zap.Request) !void {}
 pub fn delete(_: *Libgen, _: zap.Request) !void {}
 
 pub fn post(self: *Libgen, r: zap.Request) !void {
-    //try self.options(r);
-    try r.parseBody();
     r.parseQuery();
 
     const params = try r.parametersToOwnedList(self.allocator);
