@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelNameTitle = document.getElementById('modelNameTitle');
     // Add reference for download button
     const downloadZigBtn = document.getElementById('downloadZigBtn');
+    // Add references for libgen button and inputs
+    const generateLibBtn = document.getElementById('generateLibBtn');
+    const architectureInput = document.getElementById('architectureInput');
+    const cpuInput = document.getElementById('cpuInput');
 
     // Variable to store the current model name for download requests
     let currentModelName = null; 
@@ -234,6 +238,54 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error downloading Zig code:', error);
                 alert(`Failed to download Zig code: ${error.message}`);
+            }
+        });
+    }
+
+    // Libgen button listener
+    if (generateLibBtn && architectureInput && cpuInput) {
+        generateLibBtn.addEventListener('click', async () => {
+            const arch = architectureInput.value.trim();
+            const cpu = cpuInput.value.trim();
+
+            if (!currentModelName || !userSessionId || !arch || !cpu) {
+                alert('Please ensure Model Name, Session ID, Architecture, and CPU are available and fields are filled.');
+                return;
+            }
+
+            const url = 'http://localhost:3000/libgen';
+            const payload = {
+                id: userSessionId,
+                model: currentModelName,
+                target: arch,
+                cpu: cpu,
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            console.log(`Sending POST request to ${url} with JSON:`, payload);
+
+            try {
+                const response = await fetch(url, options);
+
+                if (!response.ok) {
+                    const errorBody = await response.text(); 
+                    throw new Error(`HTTP error ${response.status}: ${errorBody || response.statusText}`);
+                }
+
+                // Assuming a JSON success response like codegen
+                const result = await response.json(); 
+                console.log('Libgen request successful:', result);
+                alert(result.message || 'Library generation request successful!');
+                // TODO: Maybe provide feedback or next steps based on result
+
+            } catch (error) {
+                console.error('Error sending libgen request:', error);
+                alert(`Libgen request failed: ${error.message}`);
             }
         });
     }
