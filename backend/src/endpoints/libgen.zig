@@ -134,12 +134,12 @@ pub fn post(self: *Libgen, r: zap.Request) !void {
 
     try Runner.libGen(self.allocator, model, target_arch, cpu, output_path, generated_path);
 
-    return r.sendBody("Model found\n");
+    const response = .{ .message = "Library created successfully" };
+    const json_str = try std.json.stringifyAlloc(self.allocator, response, .{});
+    try r.setHeader("Content-Type", "application/json");
+    try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
+
+    try r.sendBody(json_str);
 }
 
-pub fn options(_: *Libgen, r: zap.Request) !void {
-    try r.setHeader("Access-Control-Allow-Origin", "http://localhost:8000");
-    try r.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    r.setStatus(zap.http.StatusCode.no_content);
-    r.markAsFinished(true);
-}
+pub fn options(_: *Libgen, _: zap.Request) !void {}
