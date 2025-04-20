@@ -22,7 +22,7 @@ pub fn deinit(_: *Codegen) void {}
 
 pub fn put(_: *Codegen, _: zap.Request) !void {}
 pub fn get(self: *Codegen, r: zap.Request) !void {
-    try r.parseBody();
+    r.parseQuery();
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
@@ -64,8 +64,10 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
     const file_size = try file.getEndPos();
     const file_data = try file.readToEndAlloc(self.allocator, file_size);
     defer self.allocator.free(file_data);
+
     try r.setHeader("Content-Type", "application/zip");
     try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model}));
+    try r.setHeader("Content-Length", try std.fmt.allocPrint(self.allocator, "{d}", .{file_size}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }
