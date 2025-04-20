@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Assuming backend sends plain text now (based on libgen.zig)
                 const resultText = await response.text(); 
                 console.log('Libgen request successful:', resultText);
-                alert(resultText || 'Library generation request successful!');
+                // alert(resultText || 'Library generation request successful!'); // Removed success alert
                 
                 // Enable the download button on success
                 if (downloadLibBtn) {
@@ -350,6 +350,55 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error sending libgen request:', error);
                 alert(`Libgen request failed: ${error.message}`);
+            } finally {
+                 hideLoadingOverlay(); // Hide overlay regardless of outcome
+            }
+        });
+    }
+
+    // Download Static Library button listener
+    if (downloadLibBtn) {
+        downloadLibBtn.addEventListener('click', async () => {
+            if (!currentModelName || !userSessionId) {
+                alert('Model name or session ID is missing.');
+                return;
+            }
+            
+            showLoadingOverlay();
+            
+            // Construct URL with query parameters
+            const url = new URL('http://localhost:3000/libgen');
+            url.searchParams.append('id', userSessionId);
+            url.searchParams.append('model', currentModelName);
+
+            console.log(`Sending GET request to: ${url}`);
+
+            try {
+                const response = await fetch(url.toString(), { method: 'GET' });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`HTTP error ${response.status}: ${errorBody || response.statusText}`);
+                }
+
+                // Handle the file download
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                // Set the download filename (e.g., modelName.a)
+                a.download = `${currentModelName}.a`; // Use .a extension
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                a.remove();
+
+                console.log('Static library download initiated successfully.');
+
+            } catch (error) {
+                console.error('Error downloading static library:', error);
+                alert(`Failed to download static library: ${error.message}`);
             } finally {
                  hideLoadingOverlay(); // Hide overlay regardless of outcome
             }
