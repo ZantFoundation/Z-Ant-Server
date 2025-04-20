@@ -22,7 +22,7 @@ pub fn deinit(_: *Libgen) void {}
 
 pub fn put(_: *Libgen, _: zap.Request) !void {}
 pub fn get(self: *Libgen, r: zap.Request) !void {
-    try r.parseBody();
+    r.parseQuery();
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
 
@@ -74,7 +74,7 @@ pub fn patch(_: *Libgen, _: zap.Request) !void {}
 pub fn delete(_: *Libgen, _: zap.Request) !void {}
 
 pub fn post(self: *Libgen, r: zap.Request) !void {
-    r.parseQuery();
+    try r.parseBody();
 
     const params = try r.parametersToOwnedList(self.allocator);
     defer params.deinit();
