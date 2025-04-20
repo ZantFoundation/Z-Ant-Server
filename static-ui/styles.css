@@ -63,7 +63,7 @@ nav a {
     text-decoration: none;
     color: #FFFFFF;
     font-size: 1rem;
-    transition: color 0.1s ease;
+    transition: color 0.2s ease;
 }
 
 nav a:hover {
@@ -91,27 +91,26 @@ nav a:hover {
 #heroSection h1 {
     font-size: 2rem;
     margin-bottom: 1rem;
-    color: #FFA500; /* Set color to standard orange */
+    color: #FFA500;
 }
 
 #startButton {
     padding: 0.8rem 1.5rem;
-    font-family: inherit; /* Inherit font */
-    font-size: 0.9rem; /* Match modelButton */
+    font-family: inherit;
+    font-size: 0.9rem;
     font-weight: 600;
-    background-color: #3a3836; /* Match modelButton */
-    color: #EEEDEA; /* Match modelButton */
-    border: 1px solid #9B9793; /* Match modelButton */
+    background-color: #3a3836;
+    color: #EEEDEA;
+    border: 1px solid #9B9793;
     border-radius: 8px;
     cursor: pointer;
-    /* Match modelButton transition */
     transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
 }
 
 #startButton:hover {
-    background-color: #4f4c49; /* Match modelButton:hover */
-    border-color: #FFA500; /* Match modelButton:hover */
-    transform: scale(1.02); /* Match modelButton:hover scale */
+    background-color: #4f4c49;
+    border-color: #FFA500;
+    transform: scale(1.02);
 }
 
 #welcomePage p {
@@ -123,10 +122,9 @@ nav a:hover {
 /* Select Model Page */
 
 #selectModelPage {
-    /* display: flex; is handled by .activePage */
     flex-direction: column;
-    align-items: center; /* Center horizontally */
-    justify-content: center; /* Center vertically */
+    align-items: center;
+    justify-content: center;
     padding: 1rem 2rem;
     height: calc(100vh - 5rem);
     width: 100%;
@@ -136,11 +134,11 @@ nav a:hover {
 #selectModelPage h2 {
     color: #FFA500;
     text-align: center;
-    margin-bottom: 1.5rem; /* Add margin back */
+    margin-bottom: 1.5rem;
 }
 
 #uploadSection, #predefinedModelsSection {
-    width: 90%; /* Allow more width */
+    width: 90%;
     max-width: 700px;
     margin-bottom: 1.5rem;
     display: flex;
@@ -149,54 +147,49 @@ nav a:hover {
 }
 
 #dropZone {
-    /* Style similar to modelButton */
-    border-radius: 8px; /* Match button radius */
-    border: 1px solid #9B9793; /* Match button border */
-    background-color: #3a3836; /* Match button background */
-    padding: 2rem; /* Keep generous padding for drop area */
+    border-radius: 8px;
+    border: 1px solid #9B9793;
+    background-color: #3a3836;
+    padding: 2rem;
     text-align: center;
     cursor: pointer;
-    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease; /* Match button transition */
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
     width: 100%;
     min-height: 150px;
     display: flex;
-    flex-direction: column; /* Stack image and text vertically */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
 }
 
-/* Target img and p directly inside #dropZone */
 #dropZone img {
     width: 50px;
     height: auto;
     margin-bottom: 1rem;
     opacity: 0.7;
-    transition: opacity 0.1s ease; /* Add transition for hover */
+    transition: opacity 0.1s ease;
 }
 
 #dropZone p {
-    color: #FFFFFF; /* Change to white */
+    color: #FFFFFF;
     font-family: inherit;
     font-size: 0.9rem;
     line-height: 1.4;
     margin: 0;
 }
 
-/* Style dragover state similar to button hover */
 #dropZone.dragover {
     background-color: #4f4c49; 
     border-color: #FFA500;
 }
 
-/* Style hover state similar to button hover */
 #dropZone:hover {
     background-color: #4f4c49; 
     border-color: #FFA500;
-    transform: scale(1.02); /* Add subtle scale like buttons */
+    transform: scale(1.02);
 }
 
-/* Style image hover directly */
 #dropZone:hover img {
     opacity: 1;
 }
@@ -208,9 +201,9 @@ nav a:hover {
 }
 
 #modelList {
-    display: grid; /* Use grid layout */
-    grid-template-columns: repeat(2, 1fr); /* Create 2 equal columns */
-    gap: 1rem; /* Adjust gap between buttons */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
     width: 100%;
 }
 
@@ -220,7 +213,7 @@ nav a:hover {
     font-size: 0.9rem;
     font-weight: 600;
     background-color: #3a3836; 
-    color: #FFFFFF; /* Change to white */
+    color: #FFFFFF;
     border: 1px solid #9B9793;
     border-radius: 8px;
     cursor: pointer;
@@ -231,8 +224,117 @@ nav a:hover {
 .modelButton:hover {
     background-color: #4f4c49; 
     border-color: #FFA500;
-    /* color: #EEEDEA; Remove hover color change */
     transform: scale(1.02);
 }
 
-/* Page Visibility Control */
+/* Deployment Page */
+
+#deploymentPage {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+    height: calc(100vh - 5rem);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#modelNameTitle {
+    color: #FFA500;
+    margin-bottom: 3rem;
+    font-size: 1.5rem;
+}
+
+.deploymentContent {
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+    max-width: 800px;
+    gap: 2rem; /* Gap between sections */
+}
+
+#deployTargetSection, #actionButtonsSection {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem; /* Spacing within sections */
+    flex-basis: 45%; /* Roughly equal width */
+}
+
+#deployTargetSection h3 {
+    color: #EEEDEA;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    text-align: left;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Add positioning context back */
+}
+
+/* Re-add absolute label styles */
+.inputGroup label {
+    font-size: 0.8rem; /* Slightly smaller label */
+    color: #EEEDEA;
+    position: absolute; 
+    top: -1rem;
+    left: 0.8rem; 
+    transform: translateY(-50%);
+    padding: 0 0.4rem; /* Horizontal padding */
+    pointer-events: none; 
+}
+
+.deployInput {
+    /* Adjust padding again for the absolute label */
+    padding: 0.8rem 1rem; 
+    font-family: inherit;
+    font-size: 0.9rem;
+    background-color: #3a3836;
+    color: #FFFFFF;
+    border: 1px solid #9B9793;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.deployInput::placeholder {
+    color: #7d7a76;
+}
+
+/* Add focus style for input fields */
+.deployInput:focus {
+    border-color: #FFA500; /* Change border to orange */
+    outline: none; /* Remove default browser outline */
+}
+
+.actionButton {
+    /* Style similar to .modelButton */
+    padding: 0.8rem 1.5rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background-color: #3a3836; 
+    color: #FFFFFF;
+    border: 1px solid #9B9793;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.1s ease, border-color 0.1s ease, transform 0.1s ease;
+    text-align: left; /* Align icon and text left */
+    display: flex; /* Use flex for icon alignment */
+    align-items: center;
+    gap: 0.75rem; /* Space between icon and text */
+}
+
+.actionButton img {
+    width: 1.2em; /* Size icon relative to text */
+    height: 1.2em;
+    vertical-align: middle; /* Helps alignment */
+    /* Invert SVG color to match text */
+    filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%); 
+}
+
+.actionButton:hover {
+    background-color: #4f4c49; 
+    border-color: #FFA500;
+    transform: scale(1.02);
+}

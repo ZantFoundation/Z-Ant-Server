@@ -42,13 +42,16 @@
         <div id="uploadSection">
             <div id="dropZone">
                 <img src="onnx-logo.png" alt="Upload ONNX Model">
-                <p>Drop Your ONNX Model Here</br>or Click to Upload</p> 
+                <p>
+                    Drop or click here to upload</br>
+                    your ONNX model
+                </p> 
                 <input type="file" id="fileInput" accept=".onnx" style="display: none;">
             </div>
         </div>
 
         <div id="predefinedModelsSection">
-            <h3>Or Use a Predefined Model</h3>
+            <h3>Or use a predefined model</h3>
             <div id="modelList">
                 <!-- Predefined models will be listed here -->
                 <button class="modelButton" data-model="mnist-1">Mnist-1</button>
@@ -56,6 +59,40 @@
                 <button class="modelButton" data-model="wakeWord">WakeWord</button>
                 <button class="modelButton" data-model="yolo">YOLO</button>
                 <!-- Add more models as needed -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Deployment Page -->
+    <div id="deploymentPage" class="hiddenPage">
+        <h2 id="modelNameTitle">ModelName</h2> <!-- Title will be set dynamically -->
+        
+        <div class="deploymentContent">
+            <div id="deployTargetSection">
+                <div class="inputGroup">
+                    <label for="architectureInput">Architecture</label>
+                    <input type="text" id="architectureInput" class="deployInput" placeholder="x86_64">
+                </div>
+                <div class="inputGroup">
+                    <label for="cpuInput">CPU</label>
+                    <input type="text" id="cpuInput" class="deployInput" placeholder="cortex_m33">
+                </div>
+                <button id="generateLibBtn" class="actionButton">
+                    <img src="resources/memory_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg" alt=""> Generate Static Library
+                </button>
+            </div>
+            
+            <div id="actionButtonsSection">
+                <button id="visualizeBtn" class="actionButton">
+                    <img src="resources/graph_2_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg" alt=""> Visualize Model
+                </button>
+                <button id="downloadZigBtn" class="actionButton">
+                    <img src="resources/deployed_code_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg" alt=""> Download Zig Code
+                </button>
+                <button id="downloadLibBtn" class="actionButton">
+                    <img src="resources/sdk_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.svg" alt=""> Download Static Library
+                </button>
+                 <!-- Removed Generate Static Library button as it seems redundant with Download Static Lib and not in the image -->
             </div>
         </div>
     </div>

@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const modelList = document.getElementById('modelList'); // Also need this for API call
+    // Add references for deployment page
+    const deploymentPage = document.getElementById('deploymentPage');
+    const modelNameTitle = document.getElementById('modelNameTitle');
+    // Add reference for download button
+    const downloadZigBtn = document.getElementById('downloadZigBtn');
+
+    // Variable to store the current model name for download requests
+    let currentModelName = null; 
 
     // --- Page Navigation ---
     if (startButton) {
@@ -34,7 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (selectModelPage && selectModelPage.classList.contains('activePage')) {
                  selectModelPage.classList.replace('activePage', 'hiddenPage');
             }
-            // Add checks for other potential pages here if needed
+            // Hide the deployment page if it's active
+            if (deploymentPage && deploymentPage.classList.contains('activePage')) {
+                 deploymentPage.classList.replace('activePage', 'hiddenPage');
+            }
 
             // Ensure welcome page is active
             if (welcomePage && !welcomePage.classList.contains('activePage')) { 
@@ -120,6 +131,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-add or ensure sendCodegenRequest handles both JSON and FormData
     async function sendCodegenRequest(data, isFormData = false) {
         const url = 'http://localhost:3000/codegen'; // Explicitly set backend URL
+        let modelName = 'Unknown Model'; // Default model name
+
+        // Determine model name for the title
+        if (isFormData) {
+            // Extract filename from FormData (assuming 'file' field exists)
+            const file = data.get('file');
+            if (file && file.name) {
+                 const dotIndex = file.name.lastIndexOf('.');
+                 modelName = dotIndex > 0 ? file.name.substring(0, dotIndex) : file.name;
+            }
+        } else {
+             // Get model name from JSON data (assuming 'model' field exists)
+             if (data.model) {
+                 modelName = data.model;
+             }
+        }
+
         const options = {
             method: 'POST',
             // Headers are set differently for FormData vs JSON
@@ -140,14 +168,74 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json(); // Assume success response is JSON
             console.log('Codegen request successful:', result);
-            alert('Codegen request successful! Check server logs or next steps.');
-            // TODO: Handle successful response (e.g., display result, navigate)
+            // alert('Codegen request successful! Check server logs or next steps.'); // Replace alert with page navigation
+            
+            // Navigate to Deployment Page on Success
+            if (selectModelPage) selectModelPage.classList.replace('activePage', 'hiddenPage');
+            if (deploymentPage && modelNameTitle) {
+                currentModelName = modelName; // Store the model name
+                modelNameTitle.textContent = `Deploy ${currentModelName}`; // Update title format
+                deploymentPage.classList.replace('hiddenPage', 'activePage');
+            } else {
+                console.error('Deployment page elements not found!');
+            }
 
         } catch (error) {
             console.error('Error sending codegen request:', error);
             alert(`Codegen request failed: ${error.message}`);
             // TODO: Handle error display for the user
         }
+    }
+
+    // --- Deployment Page Button Listeners ---
+    if (downloadZigBtn) {
+        downloadZigBtn.addEventListener('click', async () => {
+            if (!currentModelName) {
+                alert('Model name is not available.');
+                return;
+            }
+            if (!userSessionId) {
+                 alert('User session ID is not available.');
+                 return;
+            }
+
+            // Construct URL with query parameters
+            const url = new URL('http://localhost:3000/codegen');
+            url.searchParams.append('id', userSessionId);
+            url.searchParams.append('model', currentModelName);
+
+            console.log(`Sending GET request to: ${url}`);
+
+            try {
+                const response = await fetch(url.toString(), { // Convert URL object to string
+                    method: 'GET',
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    throw new Error(`HTTP error ${response.status}: ${errorBody || response.statusText}`);
+                }
+
+                // Handle the file download
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = downloadUrl;
+                // Set the download filename (e.g., modelName.zip)
+                a.download = `${currentModelName}.zip`; 
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(downloadUrl);
+                a.remove();
+
+                console.log('Zig code download initiated successfully.');
+
+            } catch (error) {
+                console.error('Error downloading Zig code:', error);
+                alert(`Failed to download Zig code: ${error.message}`);
+            }
+        });
     }
 
 });
