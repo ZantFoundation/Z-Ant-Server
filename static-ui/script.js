@@ -27,33 +27,78 @@ document.addEventListener('DOMContentLoaded', () => {
     const generateLibBtn = document.getElementById('generateLibBtn');
     const architectureInput = document.getElementById('architectureInput');
     const cpuInput = document.getElementById('cpuInput');
+    const visualizeBtn = document.getElementById('visualizeBtn');
+    // Add references for modal elements
+    const svgModal = document.getElementById('svgModal');
+    const modalOverlay = document.querySelector('.modalOverlay'); // Use querySelector for class
+    const svgContainer = document.getElementById('svgContainer');
+    // Add reference for the download lib button (to enable/disable)
+    const downloadLibBtn = document.getElementById('downloadLibBtn'); 
+    // Add reference for loading overlay
+    const loadingOverlay = document.getElementById('loadingOverlay');
 
     // Variable to store the current model name for download requests
     let currentModelName = null; 
 
+    // --- Page Navigation Helper ---
+    function switchPageWithAnimation(currentPage, nextPage, direction = 'right') { // Default direction is right
+        if (currentPage && nextPage) {
+            currentPage.classList.replace('activePage', 'hiddenPage');
+            nextPage.classList.replace('hiddenPage', 'activePage');
+            
+            // Determine animation class based on direction
+            const animationClass = direction === 'left' ? 'slide-in-left' : 'slide-in';
+            
+            // Apply animation class
+            nextPage.classList.add(animationClass);
+            
+            // Remove animation class after animation ends (adjust time based on CSS)
+            nextPage.addEventListener('animationend', () => {
+                nextPage.classList.remove(animationClass);
+            }, { once: true }); // Ensure listener runs only once
+        }
+    }
+
     // --- Page Navigation ---
+    // Add event listener for all back buttons
+    document.querySelectorAll('.backButton').forEach(button => {
+        button.addEventListener('click', () => {
+            // Custom back navigation logic
+            if (deploymentPage.classList.contains('activePage')) {
+                // Reset deployment page state
+                if (architectureInput) architectureInput.value = '';
+                if (cpuInput) cpuInput.value = '';
+                if (downloadLibBtn) downloadLibBtn.disabled = true;
+                currentModelName = null;
+                // Switch page with animation from LEFT
+                switchPageWithAnimation(deploymentPage, selectModelPage, 'left');
+            } else if (selectModelPage.classList.contains('activePage')) {
+                // Switch page with animation from LEFT
+                switchPageWithAnimation(selectModelPage, welcomePage, 'left');
+            }
+        });
+    });
+
     if (startButton) {
         startButton.addEventListener('click', () => {
-            if (welcomePage) welcomePage.classList.replace('activePage', 'hiddenPage');
-            if (selectModelPage) selectModelPage.classList.replace('hiddenPage', 'activePage'); // Show select model page
+            switchPageWithAnimation(welcomePage, selectModelPage); // Default: slide from right
         });
     }
 
     // Add listener for logo click to return home
     if (logoClick) {
         logoClick.addEventListener('click', () => {
-            // Hide the select model page if it's active
+            let currentPage = null;
             if (selectModelPage && selectModelPage.classList.contains('activePage')) {
-                 selectModelPage.classList.replace('activePage', 'hiddenPage');
+                 currentPage = selectModelPage;
             }
-            // Hide the deployment page if it's active
             if (deploymentPage && deploymentPage.classList.contains('activePage')) {
-                 deploymentPage.classList.replace('activePage', 'hiddenPage');
+                 currentPage = deploymentPage;
             }
 
-            // Ensure welcome page is active
-            if (welcomePage && !welcomePage.classList.contains('activePage')) { 
-                welcomePage.classList.replace('hiddenPage', 'activePage'); 
+            // Only navigate if we are not already on the welcome page
+            if (currentPage && welcomePage) {
+                switchPageWithAnimation(currentPage, welcomePage, 'left'); // Slide from left when going home
             }
         });
     }
@@ -134,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Re-add or ensure sendCodegenRequest handles both JSON and FormData
     async function sendCodegenRequest(data, isFormData = false) {
+        showLoadingOverlay(); // Show overlay
         const url = 'http://localhost:3000/codegen'; // Explicitly set backend URL
         let modelName = 'Unknown Model'; // Default model name
 
@@ -175,11 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // alert('Codegen request successful! Check server logs or next steps.'); // Replace alert with page navigation
             
             // Navigate to Deployment Page on Success
-            if (selectModelPage) selectModelPage.classList.replace('activePage', 'hiddenPage');
             if (deploymentPage && modelNameTitle) {
                 currentModelName = modelName; // Store the model name
                 modelNameTitle.textContent = `Deploy ${currentModelName}`; // Update title format
-                deploymentPage.classList.replace('hiddenPage', 'activePage');
+                switchPageWithAnimation(selectModelPage, deploymentPage); // Default: slide from right
             } else {
                 console.error('Deployment page elements not found!');
             }
@@ -188,12 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error sending codegen request:', error);
             alert(`Codegen request failed: ${error.message}`);
             // TODO: Handle error display for the user
+        } finally {
+            hideLoadingOverlay(); // Hide overlay regardless of outcome
         }
+    }
+
+    // --- Loading Overlay Functions ---
+    function showLoadingOverlay() {
+        if (loadingOverlay) loadingOverlay.classList.replace('hiddenPage', 'activePage');
+    }
+
+    function hideLoadingOverlay() {
+         if (loadingOverlay) loadingOverlay.classList.replace('activePage', 'hiddenPage');
     }
 
     // --- Deployment Page Button Listeners ---
     if (downloadZigBtn) {
         downloadZigBtn.addEventListener('click', async () => {
+            showLoadingOverlay(); // Show overlay
             if (!currentModelName) {
                 alert('Model name is not available.');
                 return;
@@ -238,6 +295,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) {
                 console.error('Error downloading Zig code:', error);
                 alert(`Failed to download Zig code: ${error.message}`);
+            } finally {
+                 hideLoadingOverlay(); // Hide overlay regardless of outcome
             }
         });
     }
@@ -245,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Libgen button listener
     if (generateLibBtn && architectureInput && cpuInput) {
         generateLibBtn.addEventListener('click', async () => {
+            showLoadingOverlay(); // Show overlay
             const arch = architectureInput.value.trim();
             const cpu = cpuInput.value.trim();
 
@@ -277,15 +337,80 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(`HTTP error ${response.status}: ${errorBody || response.statusText}`);
                 }
 
-                // Assuming a JSON success response like codegen
-                const result = await response.json(); 
-                console.log('Libgen request successful:', result);
-                alert(result.message || 'Library generation request successful!');
-                // TODO: Maybe provide feedback or next steps based on result
+                // Assuming backend sends plain text now (based on libgen.zig)
+                const resultText = await response.text(); 
+                console.log('Libgen request successful:', resultText);
+                alert(resultText || 'Library generation request successful!');
+                
+                // Enable the download button on success
+                if (downloadLibBtn) {
+                    downloadLibBtn.disabled = false;
+                }
 
             } catch (error) {
                 console.error('Error sending libgen request:', error);
                 alert(`Libgen request failed: ${error.message}`);
+            } finally {
+                 hideLoadingOverlay(); // Hide overlay regardless of outcome
+            }
+        });
+    }
+
+    // --- Modal Open/Close Functions ---
+    function openModal() {
+        if (svgModal) svgModal.classList.replace('hiddenPage', 'activePage');
+        // Add listener for Escape key
+        document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    function closeModal() {
+        if (svgModal) svgModal.classList.replace('activePage', 'hiddenPage');
+        if (svgContainer) svgContainer.innerHTML = ''; // Clear SVG content
+         // Remove listener for Escape key
+        document.removeEventListener('keydown', handleEscapeKey);
+    }
+
+    function handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    }
+
+    // Close modal listeners
+    if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
+
+    // Visualize Model button listener (Static SVG version)
+    if (visualizeBtn) {
+        visualizeBtn.addEventListener('click', async () => {
+            showLoadingOverlay(); // Show overlay
+            const svgUrl = 'resources/best.onnx.svg'; // Path to your static SVG
+            console.log(`Fetching static SVG from: ${svgUrl}`);
+
+             try {
+                const response = await fetch(svgUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                }
+                if (!response.headers.get('content-type')?.includes('svg')) {
+                    console.warn('Response does not appear to be an SVG file.');
+                    // Handle non-SVG response if necessary, maybe just show text?
+                }
+
+                const svgText = await response.text();
+                
+                if (svgContainer) {
+                    svgContainer.innerHTML = svgText; // Inject SVG content
+                    openModal(); // Open the modal
+                    console.log('SVG loaded into modal.');
+                } else {
+                    console.error('SVG container element not found!');
+                }
+
+            } catch (error) {
+                console.error('Error fetching or displaying static SVG:', error);
+                alert(`Failed to visualize model: ${error.message}`);
+            } finally {
+                 hideLoadingOverlay(); // Hide overlay regardless of outcome
             }
         });
     }
