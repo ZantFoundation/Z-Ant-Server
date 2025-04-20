@@ -196,8 +196,9 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
 }
 
 pub fn options(_: *Codegen, r: zap.Request) !void {
-    try r.setHeader("Access-Control-Allow-Origin", "http://localhost:8000");
+    try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    try r.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
     r.setStatus(zap.http.StatusCode.no_content);
     r.markAsFinished(true);
 }
