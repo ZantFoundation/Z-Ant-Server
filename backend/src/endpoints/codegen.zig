@@ -166,7 +166,7 @@ pub fn post(self: *Codegen, r: zap.Request) !void {
     const dot_index = std.mem.lastIndexOf(u8, file_name, ".") orelse file_name.len;
     const filename = file_name[0..dot_index];
 
-    const model_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/models/", .{ Constants.DATABASE_PATH, id });
+    const model_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}/models", .{ Constants.DATABASE_PATH, id });
     defer self.allocator.free(model_path);
     try std.fs.cwd().makePath(model_path);
 
