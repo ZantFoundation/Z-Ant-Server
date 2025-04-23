@@ -67,7 +67,7 @@ pub fn get(self: *Codegen, r: zap.Request) !void {
 
     try r.setHeader("Content-Type", "application/zip");
     try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.zip\"", .{model}));
-    try r.setHeader("Content-Length", try std.fmt.allocPrint(self.allocator, "{d}", .{file_size}));
+    //try r.setHeader("Content-Length", try std.fmt.allocPrint(self.allocator, "{d}", .{file_size}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }

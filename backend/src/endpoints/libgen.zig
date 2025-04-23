@@ -65,7 +65,7 @@ pub fn get(self: *Libgen, r: zap.Request) !void {
     defer self.allocator.free(file_data);
     try r.setHeader("Content-Type", "application/file");
     try r.setHeader("Content-Disposition", try std.fmt.allocPrint(self.allocator, "attachment; filename=\"{s}.a\"", .{model}));
-    try r.setHeader("Content-Length", try std.fmt.allocPrint(self.allocator, "{d}", .{file_size}));
+    //try r.setHeader("Content-Length", try std.fmt.allocPrint(self.allocator, "{d}", .{file_size}));
     try r.setHeader("Access-Control-Allow-Origin", Constants.WEBSITE_URL);
     try r.sendBody(file_data);
 }

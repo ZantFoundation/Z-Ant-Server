@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Re-add or ensure sendCodegenRequest handles both JSON and FormData
     async function sendCodegenRequest(data, isFormData = false) {
         showLoadingOverlay(); // Show overlay
-        const url = 'http://localhost:3000/codegen'; // Explicitly set backend URL
+        const url = '/api/codegen'; // Use relative path with /api prefix for Nginx proxy
         let modelName = 'Unknown Model'; // Default model name
 
         // Determine model name for the title
@@ -260,8 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  return;
             }
 
-            // Construct URL with query parameters
-            const url = new URL('http://localhost:3000/codegen');
+            // Construct URL with query parameters using a relative path for Nginx proxy
+            const url = new URL(window.location.origin + '/api/codegen');
             url.searchParams.append('id', userSessionId);
             url.searchParams.append('model', currentModelName);
 
@@ -310,10 +310,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!currentModelName || !userSessionId || !arch || !cpu) {
                 alert('Please ensure Model Name, Session ID, Architecture, and CPU are available and fields are filled.');
+                hideLoadingOverlay(); // Add this line to hide overlay before returning
                 return;
             }
 
-            const url = 'http://localhost:3000/libgen';
+            const url = '/api/libgen';
             const payload = {
                 id: userSessionId,
                 model: currentModelName,
@@ -366,8 +367,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             showLoadingOverlay();
             
-            // Construct URL with query parameters
-            const url = new URL('http://localhost:3000/libgen');
+            // Construct URL with query parameters using a relative path for Nginx proxy
+            const url = new URL(window.location.origin + '/api/libgen');
             url.searchParams.append('id', userSessionId);
             url.searchParams.append('model', currentModelName);
 
@@ -431,35 +432,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // Visualize Model button listener (Static SVG version)
     if (visualizeBtn) {
         visualizeBtn.addEventListener('click', async () => {
-            showLoadingOverlay(); // Show overlay
-            const svgUrl = 'resources/best.onnx.svg'; // Path to your static SVG
-            console.log(`Fetching static SVG from: ${svgUrl}`);
+            if (!currentModelName) {
+                alert('No model selected or available.');
+                return;
+            }
+            if (!userSessionId) {
+                alert('User session ID is missing.');
+                return;
+            }
 
-             try {
-                const response = await fetch(svgUrl);
+            showLoadingOverlay(); // Show spinner
+            console.log(`Requesting Netron visualization for model: ${currentModelName}, id: ${userSessionId}`);
+
+            // Determine if the model is one of the predefined ones
+            // This logic assumes predefined models have buttons with a specific class or attribute.
+            // We'll check if a button with data-model matching currentModelName exists.
+            const isBuiltin = !!document.querySelector(`.modelButton[data-model="${currentModelName}"]`);
+            const isBuiltinParam = isBuiltin ? '&builtin=true' : ''; // Add param only if true
+
+            const url = `/api/netron?id=${userSessionId}&model=${encodeURIComponent(currentModelName)}${isBuiltinParam}`; // Construct URL
+            console.log('Sending GET request to:', url);
+
+            try {
+                const response = await fetch(url);
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                }
-                if (!response.headers.get('content-type')?.includes('svg')) {
-                    console.warn('Response does not appear to be an SVG file.');
-                    // Handle non-SVG response if necessary, maybe just show text?
+                    const errorBody = await response.text();
+                    throw new Error(`HTTP error ${response.status}: ${errorBody || response.statusText}`);
                 }
 
-                const svgText = await response.text();
-                
+                // Check content type - should be image/svg+xml
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('image/svg+xml')) {
+                    console.warn(`Expected Content-Type image/svg+xml, but got ${contentType}`);
+                }
+
+                const svgData = await response.text(); // Get SVG as text
+
                 if (svgContainer) {
-                    svgContainer.innerHTML = svgText; // Inject SVG content
-                    openModal(); // Open the modal
-                    console.log('SVG loaded into modal.');
+                    svgContainer.innerHTML = svgData; // Display SVG inside the container
+                    openModal(); // Show the modal
                 } else {
                     console.error('SVG container element not found!');
                 }
 
             } catch (error) {
-                console.error('Error fetching or displaying static SVG:', error);
+                console.error('Error fetching or displaying SVG:', error);
                 alert(`Failed to visualize model: ${error.message}`);
             } finally {
-                 hideLoadingOverlay(); // Hide overlay regardless of outcome
+                hideLoadingOverlay(); // Hide spinner
             }
         });
     }
