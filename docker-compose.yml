@@ -21,7 +21,7 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./frontend:/usr/share/nginx/html
-      - /etc/letsencrypt/live/zant-hub.com:/etc/nginx/ssl
+      - ./nginx/ssl:/etc/nginx/ssl
     depends_on:
       - backend
     networks:
