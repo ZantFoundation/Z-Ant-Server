@@ -2,13 +2,15 @@ name: Deploy to Production
 on:
   push:
     branches: [main]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: SSH and Deploy
-        uses: appleboy/scp-action@master
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.ZANT_HUB_HOST }}
           username: ${{ secrets.ZANT_HUB_USERNAME }}
