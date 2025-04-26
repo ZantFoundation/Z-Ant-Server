@@ -1,0 +1,20 @@
+name: Deploy to Production
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH and Deploy
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.ZANT_HUB_HOST }}
+          username: ${{ secrets.ZANT_HUB_USERNAME }}
+          password: ${{ secrets.ZANT_HUB_PASSWORD }}
+          port: 22
+          script: |
+            sudo -u docker bash -c "cd /home/docker/Z-Ant-Server && git fetch && git pull origin main"
+            # Then run the build command as the docker user
+            sudo -u docker bash -c "cd /home/docker/Z-Ant-Server && COMPOSE_BAKE=true docker-compose up --build --detach"
