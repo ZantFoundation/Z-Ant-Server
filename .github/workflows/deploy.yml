@@ -6,9 +6,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: SSH and Deploy
         uses: appleboy/ssh-action@master
         with:
@@ -17,6 +14,10 @@ jobs:
           password: ${{ secrets.ZANT_HUB_PASSWORD }}
           port: 22
           script: |
-            sudo -u docker bash -c "cd /home/docker/Z-Ant-Server && git fetch && git pull origin main"
-            # Then run the build command as the docker user
-            sudo -u docker bash -c "cd /home/docker/Z-Ant-Server && COMPOSE_BAKE=true docker-compose up --build --detach"
+            cd /home/docker/Z-Ant-Server
+            git fetch && git pull origin main
+            # Stop existing containers and prune unused ones
+            docker-compose down
+            docker system prune -f
+            # Build and start containers
+            COMPOSE_BAKE=true docker-compose up --build --detach
