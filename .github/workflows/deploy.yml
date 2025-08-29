@@ -14,8 +14,6 @@ jobs:
           password: ${{ secrets.ZANT_HUB_PASSWORD }}
           port: 22
           script: |
-            cd /home/docker/
-            git clone https://github.com/ZantFoundation/Z-Ant-Server/
             cd /home/docker/Z-Ant-Server
             git fetch && git pull origin main
             # Stop existing containers and prune unused ones
